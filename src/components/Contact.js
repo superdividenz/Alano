@@ -1,7 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message_body: '',
+  });
+
+  const [status, setStatus] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('sending');
+    try {
+      await addDoc(collection(db, 'contacts'), {
+        ...formData,
+        timestamp: serverTimestamp(),
+      });
+      setFormData({ name: '', email: '', message_body: '' });
+      setStatus('sent');
+    } catch (error) {
+      console.error('Error sending contact form:', error);
+      setStatus('error');
+    }
+  };
+
   return (
     <section id="contact" className="py-5">
       <div className="container">
@@ -10,19 +43,50 @@ const Contact = () => {
         </div>
         <div className="row gx-0">
           <div className="col-lg-6 shadow-inner">
-            <Form>
+            <Form onSubmit={handleSubmit}>
               <Form.Group className="mb-3" controlId="contactName">
-                <Form.Control type="text" name="name" placeholder="Name" required />
+                <Form.Control
+                  type="text"
+                  name="name"
+                  placeholder="Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
               </Form.Group>
               <Form.Group className="mb-3" controlId="contactEmail">
-                <Form.Control type="email" name="email" placeholder="Email" required />
+                <Form.Control
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
               </Form.Group>
               <Form.Group className="mb-3" controlId="contactMessage">
-                <Form.Control as="textarea" rows={6} name="message_body" placeholder="Message" />
+                <Form.Control
+                  as="textarea"
+                  rows={6}
+                  name="message_body"
+                  placeholder="Message"
+                  value={formData.message_body}
+                  onChange={handleChange}
+                />
               </Form.Group>
-              <Button type="submit" variant="primary">Send</Button>
+              <Button type="submit" variant="primary">
+                {status === 'sending' ? 'Sending...' : 'Send'}
+              </Button>
+              {status === 'sent' && (
+                <p className="text-success mt-3">Message sent successfully!</p>
+              )}
+              {status === 'error' && (
+                <p className="text-danger mt-3">Failed to send message.</p>
+              )}
             </Form>
           </div>
+
+          {/* Right Info Panel */}
           <div className="col-lg-6 shadow-inner">
             <div className="bg-light p-5 h-100">
               <h3>
