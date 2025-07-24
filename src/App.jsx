@@ -3,7 +3,7 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import Footer from "./components/Footer";
 import Main from "./components/Main";
 import AdminLoginModal from "./pages/Login";
-import Dashboard from "./pages/Dashboard"; // ✅ import your dashboard
+import Dashboard from "./pages/Dashboard/Dashboard.jsx";
 
 function App() {
   const [showLogin, setShowLogin] = useState(false);

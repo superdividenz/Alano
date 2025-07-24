@@ -54,7 +54,7 @@ const Main = () => {
             data-aos-delay="600"
           >
             <button
-              onClick={() => setShowContactModal(true)} // open Contact modal here
+              onClick={() => setShowContactModal(true)}
               className="bg-white text-blue-800 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-100 transition duration-200 flex items-center justify-center gap-2"
             >
               <FontAwesomeIcon icon={faEnvelope} />
@@ -72,14 +72,12 @@ const Main = () => {
       </div>
 
       {/* Modals */}
-      <TicketModal
-        show={showTicketModal}
-        handleClose={() => setShowTicketModal(false)}
-      />
-      <ContactModal
-        show={showContactModal}
-        handleClose={() => setShowContactModal(false)}
-      />
+      {showTicketModal && (
+        <TicketModal handleClose={() => setShowTicketModal(false)} />
+      )}
+      {showContactModal && (
+        <ContactModal handleClose={() => setShowContactModal(false)} />
+      )}
     </header>
   );
 };
