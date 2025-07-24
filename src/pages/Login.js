@@ -1,7 +1,6 @@
-// src/components/Login.jsx
 import React, { useState } from "react";
-import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase"; // Make sure this points to your initialized Firebase auth
 
 const AdminLoginModal = ({ show, onClose, onLoginSuccess }) => {
   const [email, setEmail] = useState("");
@@ -10,58 +9,55 @@ const AdminLoginModal = ({ show, onClose, onLoginSuccess }) => {
 
   if (!show) return null;
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
       onLoginSuccess();
-      onClose();
     } catch (err) {
-      setError("Invalid credentials. Please try again.");
+      setError("Invalid login. Please try again.");
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 w-full max-w-sm relative" data-aos="zoom-in">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold"
-          aria-label="Close Login Modal"
-        >
-          &times;
-        </button>
-
-        <h2 className="text-2xl font-bold mb-6 text-center">Admin Login</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+        <h2 className="text-xl font-semibold mb-4 text-center text-gray-800">
+          Admin Login
+        </h2>
+        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
+            className="w-full border border-gray-300 p-2 rounded"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-
           <input
             type="password"
+            className="w-full border border-gray-300 p-2 rounded"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-
-          {error && <p className="text-red-600">{error}</p>}
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-          >
-            Login
-          </button>
+          <div className="flex justify-between items-center">
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Login
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-sm underline text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>

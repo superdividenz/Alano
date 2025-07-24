@@ -1,19 +1,16 @@
-// src/components/Footer.jsx
+// src/components/Footer.js
 import React from "react";
 
 const Footer = ({ onAdminLoginClick }) => {
   return (
-    <footer className="fixed bottom-0 w-full py-3 bg-transparent text-center text-white backdrop-blur-sm">
-      <div className="container mx-auto flex justify-between items-center px-4">
-        <span>Alano Banquet | &copy; 2025</span>
-        <button
-          onClick={onAdminLoginClick}
-          className="text-sm underline hover:text-gray-300"
-          aria-label="Admin Login"
-        >
-          Admin Login
-        </button>
-      </div>
+    <footer className="bg-gray-800 text-white py-4 text-center">
+      <p>© 2025 MySite</p>
+      <button
+        onClick={onAdminLoginClick}
+        className="mt-2 underline text-blue-300 hover:text-white transition"
+      >
+        Admin Login
+      </button>
     </footer>
   );
 };
