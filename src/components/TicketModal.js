@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
@@ -25,7 +25,6 @@ const TicketModal = ({ handleClose }) => {
   ];
 
   const [selectedOption, setSelectedOption] = useState(ticketOptions[0]);
-  const [quantity, setQuantity] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
@@ -34,7 +33,7 @@ const TicketModal = ({ handleClose }) => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [error, setError] = useState(null);
 
-  const totalPrice = selectedOption.price * quantity;
+  const totalPrice = selectedOption.price;
 
   const validateForm = () => {
     if (!name.trim() || !email.trim() || !address.trim() || !phone.trim()) {
@@ -44,10 +43,6 @@ const TicketModal = ({ handleClose }) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("Please enter a valid email address.");
-      return false;
-    }
-    if (quantity < 1) {
-      setError("Quantity must be at least 1.");
       return false;
     }
     setError(null);
@@ -65,7 +60,7 @@ const TicketModal = ({ handleClose }) => {
         email,
         address,
         phone,
-        qty: quantity,
+        qty: selectedOption.qty,
         label: selectedOption.label,
         price: totalPrice,
         status: "unpaid",
@@ -92,7 +87,7 @@ const TicketModal = ({ handleClose }) => {
         email,
         address,
         phone,
-        qty: quantity,
+        qty: selectedOption.qty,
         label: selectedOption.label,
         price: totalPrice,
         status: "paid",
@@ -119,7 +114,6 @@ const TicketModal = ({ handleClose }) => {
       <div
         ref={modalRef}
         className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg relative"
-        onClick={(e) => e.stopPropagation()} // Prevent click inside from closing
       >
         <button
           onClick={handleClose}

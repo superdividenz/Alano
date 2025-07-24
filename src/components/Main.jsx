@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faTicketAlt } from "@fortawesome/free-solid-svg-icons";
+import SignupProgress from "./SignupProgress";
 import TicketModal from "./TicketModal";
 import ContactModal from "./ContactModal";
+import Footer from "./Footer";
 import backgroundImg from "./images/Background.png";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-const Main = () => {
+const Main = ({ onAdminLoginClick }) => {
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
 
@@ -16,14 +18,14 @@ const Main = () => {
   }, []);
 
   return (
-    <header
-      className="relative h-screen w-full bg-cover bg-center"
+    <div
+      className="flex flex-col min-h-screen bg-cover bg-center relative"
       style={{ backgroundImage: `url(${backgroundImg})` }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-900/30 to-blue-700/50 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-900/30 to-blue-700/50 backdrop-blur-sm pointer-events-none"></div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center text-white text-center h-full px-4">
+      <header className="relative flex-grow flex flex-col items-center justify-center text-white text-center px-4 z-10">
         <div className="max-w-3xl space-y-4">
           <h1
             className="text-4xl md:text-5xl font-bold leading-tight drop-shadow-md"
@@ -48,6 +50,12 @@ const Main = () => {
             Kent B. from Decatur, IL.
           </h3>
 
+          {/* Progress Bar */}
+          <div data-aos="fade-up" data-aos-delay="500">
+            <SignupProgress />
+          </div>
+
+          {/* Buttons */}
           <div
             className="mt-6 flex flex-col sm:flex-row justify-center gap-4"
             data-aos="zoom-in"
@@ -69,7 +77,7 @@ const Main = () => {
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Modals */}
       {showTicketModal && (
@@ -78,7 +86,10 @@ const Main = () => {
       {showContactModal && (
         <ContactModal handleClose={() => setShowContactModal(false)} />
       )}
-    </header>
+
+      {/* Transparent Footer */}
+      <Footer onAdminLoginClick={onAdminLoginClick} />
+    </div>
   );
 };
 

@@ -1,6 +1,6 @@
+// App.jsx
 import React, { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import Footer from "./components/Footer";
 import Main from "./components/Main";
 import AdminLoginModal from "./pages/Login";
 import Dashboard from "./pages/Dashboard/Dashboard.jsx";
@@ -24,8 +24,7 @@ function App() {
           path="/"
           element={
             <>
-              <Main />
-              <Footer onAdminLoginClick={handleLoginClick} />
+              <Main onAdminLoginClick={handleLoginClick} />
               <AdminLoginModal
                 show={showLogin}
                 onClose={handleLoginClose}
@@ -34,7 +33,10 @@ function App() {
             </>
           }
         />
-        <Route path="/dashboard" element={<Dashboard onLogout={() => navigate("/")} />} />
+        <Route
+          path="/dashboard"
+          element={<Dashboard onLogout={() => navigate("/")} />}
+        />
       </Routes>
     </div>
   );
