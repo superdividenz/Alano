@@ -3,7 +3,7 @@ import React from "react";
 
 const DataTable = ({ data, type, onDelete }) => {
   if (!data || data.length === 0) {
-    return <p className="text-gray-500 mt-4">No {type} available.</p>;
+    return <p className="text-gray-500 mt-4">No {type} availables.</p>;
   }
 
   // Extract table headers excluding `id`

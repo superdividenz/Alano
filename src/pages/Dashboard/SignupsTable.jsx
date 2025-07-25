@@ -4,7 +4,7 @@ import React from "react";
 
 const SignupsTable = ({ data, onDelete }) => {
   if (!data || data.length === 0) {
-    return <p className="text-gray-500 mt-4">No signups availables.</p>;
+    return <p className="text-gray-500 mt-4">No signups available.</p>;
   }
 
   // Include paymentStatus and sort it to the end

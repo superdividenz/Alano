@@ -1,4 +1,3 @@
-// src/pages/Dashboard/Dashboard.jsx
 import React, { useState, useEffect } from "react";
 import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -12,14 +11,18 @@ import ErrorMessage from "./ErrorMessage";
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("contacts");
   const [contacts, setContacts] = useState([]);
-  const [signups, setSignups] = useState([]);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
+
+  // Define logout
+  const onLogout = () => {
+  console.log("Logging out...");
+  window.location.href = "/";
+};
 
   useEffect(() => {
     setLoading(true);
@@ -28,15 +31,6 @@ const Dashboard = () => {
       collection(db, "contacts"),
       (snapshot) => {
         setContacts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-        setLoading(false);
-      },
-      (err) => setError(err.message)
-    );
-
-    const unsubscribeSignups = onSnapshot(
-      collection(db, "signups"),
-      (snapshot) => {
-        setSignups(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
         setLoading(false);
       },
       (err) => setError(err.message)
@@ -53,20 +47,9 @@ const Dashboard = () => {
 
     return () => {
       unsubscribeContacts();
-      unsubscribeSignups();
       unsubscribePayments();
     };
   }, []);
-
-  // Add paymentStatus to signups based on payments data
-  const signupsWithStatus = signups.map((signup) => {
-    const paid = payments.some(
-      (p) =>
-        (p.status === "paid" || p.status === "completed") &&
-        (p.email === signup.email || p.signupId === signup.id)
-    );
-    return { ...signup, paymentStatus: paid ? "Paid" : "Not Paid" };
-  });
 
   const handleDelete = async (id, type) => {
     try {
@@ -76,7 +59,7 @@ const Dashboard = () => {
     }
   };
 
-  // Select data and type based on active tab
+  // Decide which data to show
   let data = [];
   let dataType = "";
 
@@ -84,9 +67,6 @@ const Dashboard = () => {
     data = contacts;
     dataType = "contacts";
   } else if (activeTab === "signups") {
-    data = signupsWithStatus;
-    dataType = "signups";
-  } else if (activeTab === "payments") {
     data = payments
       .filter((p) =>
         searchTerm
@@ -103,43 +83,41 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 space-y-6">
-  <Header />
-  <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Header onLogout={onLogout} />
+      <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-  {activeTab === "payments" && (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gray-50 border border-gray-200 p-4 rounded-lg shadow-sm">
-      <input
-        type="text"
-        placeholder="Search payments..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full sm:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-      />
+      {activeTab === "signups" && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gray-50 border border-gray-200 p-4 rounded-lg shadow-sm">
+          <input
+            type="text"
+            placeholder="Search signups..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full sm:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+          />
 
-      <select
-        value={paymentFilter}
-        onChange={(e) => setPaymentFilter(e.target.value)}
-        className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full sm:w-48 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-      >
-        <option value="all">All</option>
-        <option value="paid">Paid</option>
-        <option value="unpaid">Unpaid</option>
-        <option value="completed">Completed</option>
-      </select>
+          <select
+            value={paymentFilter}
+            onChange={(e) => setPaymentFilter(e.target.value)}
+            className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full sm:w-48 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+          >
+            <option value="all">All</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+      )}
+
+      <ExportButton data={data} fileName={activeTab} />
+      {error && <ErrorMessage message={error} />}
+
+      {loading ? (
+        <Loader />
+      ) : (
+        <DataTable data={data} type={dataType} onDelete={handleDelete} />
+      )}
     </div>
-  )}
-
-  <ExportButton data={data} fileName={activeTab} />
-  
-  {error && <ErrorMessage message={error} />}
-
-  {loading ? (
-    <Loader />
-  ) : (
-    <DataTable data={data} type={dataType} onDelete={handleDelete} />
-  )}
-</div>
-
   );
 };
 
