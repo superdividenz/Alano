@@ -1,144 +1,110 @@
-import React, { useEffect, useState, useRef } from "react";
-import AOS from "aos";
-import "aos/dist/aos.css";
+import React, { useState } from "react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-const ContactModal = ({ show, handleClose }) => {
+const ContactModal = ({ handleClose }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     message_body: "",
   });
+  const [status, setStatus] = useState(null);
 
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-  const modalRef = useRef(null);
-
-  useEffect(() => {
-    AOS.init({ duration: 600, easing: "ease-in-out", once: true });
-    AOS.refresh();
-  }, []);
-
-  // Close when clicking outside the modal
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (modalRef.current && !modalRef.current.contains(e.target)) {
-        handleClose();
-      }
-    };
-    if (show) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [show, handleClose]);
-
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  const handleChange = (e) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
+    setStatus("sending");
     try {
       await addDoc(collection(db, "contacts"), {
         ...formData,
-        createdAt: serverTimestamp(),
+        timestamp: serverTimestamp(),
       });
-
-      setFormData({ name: "", email: "", phone: "", message_body: "" });
-      setSent(true);
-      setTimeout(() => {
-        setSent(false);
-        handleClose();
-      }, 2000);
+      setFormData({ name: "", email: "", message_body: "" });
+      setStatus("sent");
     } catch (error) {
-      console.error("Error submitting message:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error:", error);
+      setStatus("error");
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm"
-      data-aos="fade-in"
-    >
-      <div
-        ref={modalRef}
-        className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-8 relative mx-4 sm:mx-0"
-        data-aos="zoom-in"
-      >
-        {/* Close */}
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-4xl h-[75vh] relative overflow-y-auto">
+        {/* Close Button */}
         <button
           onClick={handleClose}
-          aria-label="Close Contact Modal"
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-3xl font-bold"
+          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
         >
           &times;
         </button>
 
-        <h2 className="text-3xl font-extrabold mb-6 text-center text-gray-900">
-          Contact Us
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Contact Us</h2>
 
-        {sent ? (
-          <div className="text-green-600 font-semibold text-center">
-            ✅ Message sent!
-          </div>
-        ) : (
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+          {/* Contact Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 h-full overflow-y-auto"
+          >
             <input
-              type="text"
               name="name"
-              placeholder="Name"
-              required
+              type="text"
+              placeholder="Your Name"
+              className="w-full p-3 border rounded"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-5 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
-            />
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
               required
+            />
+            <input
+              name="email"
+              type="email"
+              placeholder="Your Email"
+              className="w-full p-3 border rounded"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-5 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+              required
             />
-
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full px-5 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
-            />
-
             <textarea
               name="message_body"
-              placeholder="Message"
-              rows={5}
-              required
+              placeholder="Your Message"
+              rows={6}
+              className="w-full p-3 border rounded resize-none"
               value={formData.message_body}
               onChange={handleChange}
-              className="w-full px-5 py-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-400"
+              required
             />
-
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-60"
+              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition w-full"
             >
-              {loading ? "Sending..." : "Send"}
+              {status === "sending" ? "Sending..." : "Send Message"}
             </button>
+            {status === "sent" && (
+              <p className="text-green-500 text-center mt-2">Message sent!</p>
+            )}
+            {status === "error" && (
+              <p className="text-red-500 text-center mt-2">
+                Error sending message.
+              </p>
+            )}
           </form>
-        )}
+
+          {/* Google Map */}
+          <div className="h-full w-full rounded-lg overflow-hidden shadow-md">
+            <iframe
+              title="Event Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6226.0822339754595!2d-90.45907712485702!3d38.716864971763094!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x87df2df311b91275%3A0x31e271b29644fffc!2s2050%20Dorsett%20Rd%2C%20Maryland%20Heights%2C%20MO%2063043!5e0!3m2!1sen!2sus!4v1756611174286!5m2!1sen!2sus"
+              width="100%"
+              height="100%"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="border-0"
+            ></iframe>
+          </div>
+        </div>
       </div>
     </div>
   );

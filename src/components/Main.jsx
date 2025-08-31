@@ -47,7 +47,14 @@ const Main = ({ onAdminLoginClick }) => {
             data-aos="fade-up"
             data-aos-delay="400"
           >
-            Kent B. from Decatur, IL.
+            Mari G, from Toronto, Canada. Speaker at 8:00 PM.
+          </h3>
+          <h3
+            className="text-xl md:text-2xl drop-shadow-md"
+            data-aos="fade-up"
+            data-aos-delay="400"
+          >
+            2050 Dorsett Village Plaza, Maryland Heights, MO 63043
           </h3>
 
           {/* Progress Bar */}
