@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import Loader from "../pages/Dashboard/Loader";
@@ -8,40 +7,41 @@ import { FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 const TicketModal = ({ handleClose }) => {
   const modalRef = useRef();
 
-  // Close when clicking outside of the modal content
   const handleOverlayClick = (e) => {
-    if (modalRef.current && !modalRef.current.contains(e.target)) {
-      handleClose();
-    }
+    if (modalRef.current && !modalRef.current.contains(e.target)) handleClose();
   };
 
   const ticketOptions = [
-    { qty: 1, label: "Single Banquet Seat", price: 46.0 },
-    { qty: 2, label: "2 Banquet Seats", price: 92.0 },
-    { qty: 4, label: "4 Banquet Seats", price: 184.0 },
-    { qty: 6, label: "6 Banquet Seats", price: 276.0 },
-    { qty: 8, label: "8 Banquet Seats", price: 368.0 },
-    { qty: 10, label: "Full Table of 10 Seats", price: 460.0 },
+    "Single Banquet Seat",
+    "2 Banquet Seats",
+    "4 Banquet Seats",
+    "6 Banquet Seats",
+    "8 Banquet Seats",
+    "Full Table of 10 Seats",
+    "Single Seat + 1 Newbie Scholarship",
+    "Two Seats + 1 Newbie Scholarship",
+    "4 Seats + 1 Newbie Scholarship",
+    "6 Seats + 1 Newbie Scholarship",
   ];
 
   const [selectedOption, setSelectedOption] = useState(ticketOptions[0]);
+  const [preference, setPreference] = useState("");
+  const [scholarship, setScholarship] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [notify, setNotify] = useState(false); // ✅ New state
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   const [error, setError] = useState(null);
-
-  const totalPrice = selectedOption.price;
 
   const validateForm = () => {
     if (!name.trim() || !email.trim() || !address.trim() || !phone.trim()) {
       setError("Please fill out all required fields.");
       return false;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Please enter a valid email address.");
       return false;
     }
@@ -60,9 +60,10 @@ const TicketModal = ({ handleClose }) => {
         email,
         address,
         phone,
-        qty: selectedOption.qty,
-        label: selectedOption.label,
-        price: totalPrice,
+        ticket: selectedOption,
+        preference,
+        scholarship,
+        notify, // ✅ Save to Firestore
         status: "unpaid",
         createdAt: serverTimestamp(),
       });
@@ -72,119 +73,99 @@ const TicketModal = ({ handleClose }) => {
         setLoading(false);
         handleClose();
       }, 2000);
-    } catch (err) {
-      setError("Failed to submit reservation. Please try again.");
-      setLoading(false);
-    }
-  };
-
-  const handlePayPalSuccess = async (details) => {
-    if (!validateForm()) return;
-    setLoading(true);
-    try {
-      await addDoc(collection(db, "ticket_transactions"), {
-        name,
-        email,
-        address,
-        phone,
-        qty: selectedOption.qty,
-        label: selectedOption.label,
-        price: totalPrice,
-        status: "paid",
-        payer: details.payer.name.given_name,
-        paymentID: details.id,
-        createdAt: serverTimestamp(),
-      });
-      setSuccessMessage("Payment successful! Your reservation is confirmed.");
-      setTimeout(() => {
-        setLoading(false);
-        handleClose();
-      }, 2000);
-    } catch (err) {
-      setError("Payment succeeded but failed to save transaction.");
+    } catch {
+      setError("Failed to submit reservation.");
       setLoading(false);
     }
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-3 py-4 sm:px-4 sm:py-6 overflow-auto"
       onClick={handleOverlayClick}
     >
       <div
         ref={modalRef}
-        className="bg-white rounded-lg w-full max-w-md p-6 shadow-lg relative"
+        className="bg-white rounded-lg w-full max-w-sm p-4 sm:p-6 shadow-lg relative"
       >
         <button
           onClick={handleClose}
-          className="absolute top-3 right-4 text-gray-500 hover:text-gray-700 text-xl font-bold"
+          className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-xl font-bold"
           disabled={loading}
         >
           ×
         </button>
 
-        <h2 className="text-2xl font-bold mb-4 text-center">Get Your Tickets</h2>
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 text-center">
+          Get Your Tickets
+        </h2>
 
-        <div className="space-y-4">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            disabled={loading}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Your full name"
-          />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Your email"
-          />
-          <input
-            type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            disabled={loading}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Your address"
-          />
-          <input
-            type="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            disabled={loading}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="Your phone"
-          />
+        <div className="space-y-2">
+          {/* Inputs */}
+          {[{ value: name, set: setName, type: "text", placeholder: "Full Name" },
+            { value: email, set: setEmail, type: "email", placeholder: "Email" },
+            { value: address, set: setAddress, type: "text", placeholder: "Address" },
+            { value: phone, set: setPhone, type: "tel", placeholder: "Phone" }
+          ].map((input, idx) => (
+            <input
+              key={idx}
+              type={input.type}
+              value={input.value}
+              onChange={(e) => input.set(e.target.value)}
+              disabled={loading}
+              className="w-full border border-gray-300 px-2 py-1.5 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+              placeholder={input.placeholder}
+            />
+          ))}
+
+          {/* Ticket select */}
           <select
-            className="w-full border px-3 py-2 rounded"
-            value={selectedOption.label}
-            onChange={(e) =>
-              setSelectedOption(ticketOptions.find((opt) => opt.label === e.target.value))
-            }
+            value={selectedOption}
+            onChange={(e) => setSelectedOption(e.target.value)}
             disabled={loading}
+            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
           >
             {ticketOptions.map((option) => (
-              <option key={option.label} value={option.label}>
-                {option.label} - ${option.price.toFixed(2)}
-              </option>
+              <option key={option} value={option}>{option}</option>
             ))}
           </select>
 
-          <div className="text-lg font-semibold text-center">
-            Total: ${totalPrice.toFixed(2)}
-          </div>
+          <input
+            type="text"
+            value={preference}
+            onChange={(e) => setPreference(e.target.value)}
+            disabled={loading}
+            placeholder="Preference (pickup/mailed)"
+            className="w-full border border-gray-300 px-2 py-1.5 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+          />
+
+          <input
+            type="text"
+            value={scholarship}
+            onChange={(e) => setScholarship(e.target.value)}
+            disabled={loading}
+            placeholder="Scholarship options"
+            className="w-full border border-gray-300 px-2 py-1.5 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+          />
+
+          {/* ✅ Notification Checkbox */}
+          <label className="flex items-center gap-2 text-sm mt-2">
+            <input
+              type="checkbox"
+              checked={notify}
+              onChange={(e) => setNotify(e.target.checked)}
+              disabled={loading}
+            />
+            Would you like to be notified of future Alano events?
+          </label>
 
           {successMessage && (
-            <div className="text-green-600 flex items-center gap-2">
+            <div className="text-green-600 flex items-center gap-2 text-sm">
               <FaCheckCircle /> {successMessage}
             </div>
           )}
-
           {error && (
-            <div className="text-red-600 flex items-center gap-2">
+            <div className="text-red-600 flex items-center gap-2 text-sm">
               <FaExclamationCircle /> {error}
             </div>
           )}
@@ -194,38 +175,59 @@ const TicketModal = ({ handleClose }) => {
           <Loader />
         ) : (
           <>
-            <div className="mt-6">
-              <PayPalScriptProvider options={{ "client-id": "test" }}>
-                <PayPalButtons
-                  style={{ layout: "horizontal" }}
-                  createOrder={(data, actions) => {
-                    return actions.order.create({
-                      purchase_units: [
-                        {
-                          amount: {
-                            value: totalPrice.toFixed(2),
-                          },
-                        },
-                      ],
-                    });
-                  }}
-                  onApprove={async (data, actions) => {
-                    const details = await actions.order.capture();
-                    handlePayPalSuccess(details);
-                  }}
-                  onError={(err) => {
-                    setError("PayPal error occurred.");
-                    console.error(err);
-                  }}
+            {/* PayPal Form */}
+            <form
+              action="https://www.paypal.com/cgi-bin/webscr"
+              method="post"
+              target="_top"
+              className="mt-3 space-y-2"
+            >
+              <input type="hidden" name="cmd" value="_s-xclick" />
+              <input type="hidden" name="hosted_button_id" value="PCBMQQVBP56XE" />
+              <input type="hidden" name="currency_code" value="USD" />
+
+              <select
+                name="os0"
+                value={selectedOption}
+                onChange={(e) => setSelectedOption(e.target.value)}
+                className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+              >
+                {ticketOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+
+              <input
+                type="text"
+                name="os1"
+                value={preference}
+                onChange={(e) => setPreference(e.target.value)}
+                placeholder="Name & preference (pickup/mailed)"
+                className="w-full border border-gray-300 px-2 py-1.5 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+
+              <input
+                type="text"
+                name="os2"
+                value={scholarship}
+                onChange={(e) => setScholarship(e.target.value)}
+                placeholder="Scholarship options"
+                className="w-full border border-gray-300 px-2 py-1.5 rounded text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
+              />
+
+              <button type="submit" className="w-full mt-1">
+                <img
+                  src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif"
+                  alt="Buy Now"
+                  className="mx-auto"
                 />
-              </PayPalScriptProvider>
-            </div>
+              </button>
+            </form>
 
-            <div className="my-4 text-center text-gray-400 font-medium">OR</div>
-
+            {/* Submit Without Payment */}
             <button
               onClick={handleSubmitWithoutPayment}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 rounded-md transition duration-200"
+              className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded text-sm transition"
             >
               Submit Without Payment
             </button>

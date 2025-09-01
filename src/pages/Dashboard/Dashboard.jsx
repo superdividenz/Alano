@@ -1,3 +1,4 @@
+// src/pages/Dashboard/Dashboard.jsx
 import React, { useState, useEffect } from "react";
 import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -9,7 +10,11 @@ import Loader from "./Loader";
 import ErrorMessage from "./ErrorMessage";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("contacts");
+  // Initialize activeTab from localStorage or default to "signups"
+  const [activeTab, setActiveTab] = useState(
+    localStorage.getItem("activeTab") || "signups"
+  );
+
   const [contacts, setContacts] = useState([]);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,12 +23,12 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
 
-  // Define logout
-  const onLogout = () => {
-  console.log("Logging out...");
-  window.location.href = "/";
-};
+  // Persist activeTab to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("activeTab", activeTab);
+  }, [activeTab]);
 
+  // Fetch contacts and payments
   useEffect(() => {
     setLoading(true);
 
@@ -80,6 +85,11 @@ const Dashboard = () => {
       );
     dataType = "ticket_transactions";
   }
+
+  const onLogout = () => {
+    console.log("Logging out...");
+    window.location.href = "/";
+  };
 
   return (
     <div className="p-6 space-y-6">
