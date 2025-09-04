@@ -103,7 +103,7 @@ const Main = ({ onAdminLoginClick }) => {
             </button>
 
             <button
-              onClick={() => { setFlyerUrl("/flyers/Orlando Gardens - South floor plan 600.pdf"); setShowFlyerModal(true); }}
+              onClick={() => { setFlyerUrl("/flyers/2025 Banquet Layout.pdf"); setShowFlyerModal(true); }}
               className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition duration-200 text-sm sm:text-base"
             >
               <FontAwesomeIcon icon={faFilePdf} />
@@ -111,7 +111,7 @@ const Main = ({ onAdminLoginClick }) => {
             </button>
 
             <button
-              onClick={() => { setFlyerUrl("/flyers/2024 alano banquet_2024 LETTER3.pdf"); setShowFlyerModal(true); }}
+              onClick={() => { setFlyerUrl("/flyers/2025-11-22 AlanoBanquet2_hl Flyer.pdf"); setShowFlyerModal(true); }}
               className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition duration-200 text-sm sm:text-base"
             >
               <FontAwesomeIcon icon={faFilePdf} />
