@@ -1,83 +1,62 @@
-// src/components/seat-reservation/SeatsDashboard.js
+// src/components/seat-reservation/SeatsDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 
-const TOTAL_SEATS = 600;
+const ALL_SEATS = [
+  "A1","A2","A3","A4","A5","A6","A7","A8","A9","A10",
+  "B1","B2","B3","B4","B5","B6","B7","B8","B9","B10",
+  "C1","C2","C3","C4","C5","C6","C7","C8","C9","C10",
+  "D1","D2","D3","D4","D5","D6","D7","D8","D9","D10",
+];
 
 const SeatsDashboard = () => {
-  const [tables, setTables] = useState([]);
-  const [reservedSeats, setReservedSeats] = useState(0);
+  const [reservedSeats, setReservedSeats] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for table updates in Firestore
-    const unsubscribe = onSnapshot(collection(db, "tables"), (snapshot) => {
-      const tablesData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setTables(tablesData);
-
-      // Defensive: count reserved seats
-      const total = tablesData.reduce((sum, table) => {
-        const seats = table?.seats ?? [];
-        // Use your seat property for "taken" (or "reserved")
-        return sum + seats.filter((seat) => seat.taken === true).length;
-      }, 0);
-
-      setReservedSeats(total);
-    });
+    const unsubscribe = onSnapshot(
+      collection(db, "ticket_transactions"),
+      (snapshot) => {
+        const seats = [];
+        snapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          if (data.seats && Array.isArray(data.seats)) {
+            seats.push(...data.seats);
+          }
+        });
+        setReservedSeats(seats);
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, []);
 
+  if (loading) return <p>Loading seat reservations...</p>;
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Seats Dashboard</h1>
-
-      <div className="mb-6 p-4 bg-white rounded-lg shadow">
-        <h2 className="text-xl font-semibold">
-          Reserved Seats: {reservedSeats} / {TOTAL_SEATS}
-        </h2>
-        <p className="text-gray-600">
-          Remaining Seats: {TOTAL_SEATS - reservedSeats}
-        </p>
-      </div>
-
-      {/* Table Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tables.map((table) => {
-          const seats = table?.seats ?? [];
-
+    <div className="p-4">
+      <h2 className="text-xl font-semibold mb-4">Seat Reservations</h2>
+      <div className="grid grid-cols-10 gap-2">
+        {ALL_SEATS.map((seat) => {
+          const taken = reservedSeats.includes(seat);
           return (
             <div
-              key={table.id}
-              className="bg-white rounded-lg shadow p-4 border border-gray-200"
+              key={seat}
+              className={`p-2 text-center rounded-md font-medium ${
+                taken ? "bg-red-500 text-white" : "bg-green-200 text-gray-800"
+              }`}
             >
-              <h3 className="text-lg font-bold mb-3">
-                Table {table.tableNumber ?? table.number ?? "N/A"} (
-                {seats.length} seats)
-              </h3>
-              <div className="grid grid-cols-5 gap-2">
-                {seats.length === 0 && <p>No seats found.</p>}
-                {seats.map((seat, index) => (
-                  <div
-                    key={seat.seatNumber ?? seat.number ?? index}
-                    className={`p-2 rounded text-center text-sm font-medium ${
-                      seat.taken
-                        ? "bg-red-400 text-white"
-                        : "bg-green-200 text-black"
-                    }`}
-                  >
-                    {seat.seatNumber ?? seat.number ?? "?"}
-                  </div>
-                ))}
-              </div>
+              {seat}
             </div>
           );
         })}
       </div>
+      <p className="mt-3 text-sm text-gray-600">
+        <span className="bg-green-200 px-2 py-1 rounded">Available</span>{" "}
+        <span className="bg-red-500 text-white px-2 py-1 rounded">Reserved</span>
+      </p>
     </div>
   );
 };

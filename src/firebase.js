@@ -4,7 +4,8 @@ import {
   getFirestore,
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  getDocs, // ✅ add this
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
@@ -22,11 +23,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// ✅ Export these functions too
 export {
   db,
   auth,
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  getDocs // ✅ export it here
 };

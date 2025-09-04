@@ -1,8 +1,5 @@
-// src/pages/Dashboard/Tabs.jsx
-import React from "react";
-
 const Tabs = ({ activeTab, setActiveTab }) => {
-  const tabList = ["contacts", "signups"];
+  const tabList = ["contacts", "signups", "seats"];
 
   return (
     <div className="flex space-x-4 border-b">
@@ -16,7 +13,7 @@ const Tabs = ({ activeTab, setActiveTab }) => {
               : "text-gray-500 hover:text-blue-500"
           }`}
         >
-          {tab.toUpperCase()}
+          {tab === "seats" ? "SEAT RESERVATIONS" : tab.toUpperCase()}
         </button>
       ))}
     </div>

@@ -1,4 +1,3 @@
-// src/pages/Dashboard/Dashboard.jsx
 import React, { useState, useEffect } from "react";
 import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -8,9 +7,10 @@ import DataTable from "./DataTable";
 import ExportButton from "./ExportButton";
 import Loader from "./Loader";
 import ErrorMessage from "./ErrorMessage";
+import ReservationModal from "../../components/seat-reservation/ReservationModal";
+import SeatsDashboard from "../../components/seat-reservation/SeatsDashboard";
 
 const Dashboard = () => {
-  // Initialize activeTab from localStorage or default to "signups"
   const [activeTab, setActiveTab] = useState(
     localStorage.getItem("activeTab") || "signups"
   );
@@ -23,12 +23,14 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
 
-  // Persist activeTab to localStorage whenever it changes
+  // For seat reservation wiring
+  const [currentReserver, setCurrentReserver] = useState(null);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+
   useEffect(() => {
     localStorage.setItem("activeTab", activeTab);
   }, [activeTab]);
 
-  // Fetch contacts and payments
   useEffect(() => {
     setLoading(true);
 
@@ -64,7 +66,6 @@ const Dashboard = () => {
     }
   };
 
-  // Decide which data to show
   let data = [];
   let dataType = "";
 
@@ -105,7 +106,6 @@ const Dashboard = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-full sm:w-64 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
           />
-
           <select
             value={paymentFilter}
             onChange={(e) => setPaymentFilter(e.target.value)}
@@ -119,13 +119,31 @@ const Dashboard = () => {
         </div>
       )}
 
-      <ExportButton data={data} fileName={activeTab} />
-      {error && <ErrorMessage message={error} />}
-
-      {loading ? (
-        <Loader />
+      {activeTab === "seat_reservations" ? (
+        <>
+          <SeatsDashboard
+            onReserveClick={(reserver) => {
+              setCurrentReserver(reserver);
+              setShowReservationModal(true);
+            }}
+          />
+          {showReservationModal && (
+            <ReservationModal
+              reserver={currentReserver}
+              onClose={() => setShowReservationModal(false)}
+            />
+          )}
+        </>
       ) : (
-        <DataTable data={data} type={dataType} onDelete={handleDelete} />
+        <>
+          <ExportButton data={data} fileName={activeTab} />
+          {error && <ErrorMessage message={error} />}
+          {loading ? (
+            <Loader />
+          ) : (
+            <DataTable data={data} type={dataType} onDelete={handleDelete} />
+          )}
+        </>
       )}
     </div>
   );
