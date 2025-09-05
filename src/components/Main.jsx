@@ -1,7 +1,11 @@
 // src/components/Main.jsx
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faTicketAlt, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEnvelope,
+  faTicketAlt,
+  faFilePdf,
+} from "@fortawesome/free-solid-svg-icons";
 import SignupProgress from "./SignupProgress";
 import TicketModal from "./TicketModal";
 import ContactModal from "./ContactModal";
@@ -103,7 +107,10 @@ const Main = ({ onAdminLoginClick }) => {
             </button>
 
             <button
-              onClick={() => { setFlyerUrl("/flyers/2025 Banquet Layout.pdf"); setShowFlyerModal(true); }}
+              onClick={() => {
+                setFlyerUrl("/flyers/2025 Banquet Layout.pdf");
+                setShowFlyerModal(true);
+              }}
               className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition duration-200 text-sm sm:text-base"
             >
               <FontAwesomeIcon icon={faFilePdf} />
@@ -111,7 +118,10 @@ const Main = ({ onAdminLoginClick }) => {
             </button>
 
             <button
-              onClick={() => { setFlyerUrl("/flyers/2025-11-22 AlanoBanquet2_hl Flyer.pdf"); setShowFlyerModal(true); }}
+              onClick={() => {
+                setFlyerUrl("/flyers/2025-11-22 AlanoBanquet2_hl Flyer.pdf");
+                setShowFlyerModal(true);
+              }}
               className="flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-xl shadow-lg hover:bg-blue-700 transition duration-200 text-sm sm:text-base"
             >
               <FontAwesomeIcon icon={faFilePdf} />
